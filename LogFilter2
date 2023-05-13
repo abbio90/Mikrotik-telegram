@@ -1,0 +1,181 @@
+{
+#----------------------------------------
+# LOG FILTER TO TELEGRAM BY foisfabio.it
+# 
+# Script:  Log Filter to Telegram
+# Version: 2.0
+# Created: 05/02/2023
+# Updated: 13/05/2023
+# Author:  Fabio Fois
+# Website: https://foisfabio.it
+# Email: consulenza@foisfabio.it
+#
+#----------------------------------------
+#inserire qui il botID
+:local bot "123456789:ABCDEFGHILMNOPQRSTUVZ"
+#----------------------------------------
+#inserire qui il chatID1 (es: "123456789")
+:local ChatID1 "123456789"
+#----------------------------------------
+#inserire si o no se si vuole utilizzare il chatID2 (es. "si")
+:local useChatID2 "si"
+#----------------------------------------
+#inserire qui il chatID2 (es: "123456789")
+:local ChatID2 "987654321"
+#----------------------------------------
+#inserire si o no se si vuole utilizzare il chatID3 (es: "no")
+:local useChatID3 "no"
+#----------------------------------------
+#inserire qui il chatID3 (es: "123456789")
+:local ChatID3 "543216789"
+#----------------------------------------
+#inserire nome azienda
+:local azienda "GREEN-NET"
+#----------------------------------------
+#inserire qui ogni qunto tempo eseguire lo script
+:local myRunTime 60s
+#----------------------------------------
+#inserire qui uno slogan pubblicitario
+:local slogan "Sistema di alert by foisfabio.it"
+
+
+
+#----------NO MODIFY THIS SECTION----------
+
+#inserire il nome identificativo della macchina
+:local myRouterName ([/system identity get name]) 
+#----------------------------------------
+
+#----------------------------------------
+:local myserver "([/system identity get name])"
+:local scheduleName "LogFilter2.0"
+:local startBuf [:toarray [/log find message~" failure" || message~"loop" || message~"excessive" || message~"fcs" || message~"Netwatch_"  ]]
+#----------------------------------------
+:if ([:len [/system scheduler find name="$scheduleName"]] = 0) do={
+  /log error "[LogFilter2.0] Alert : lo Scheduler non esiste. Creo lo scheduler"
+
+  /system scheduler add name=$scheduleName interval=$myRunTime start-date=Jan/01/1970 start-time=startup on-event="system script run LogFilter2"
+
+  /log warning "[LogFilter2.0] Alert : Scheduler creato ."
+}
+#----------------------------------------
+
+# get last time
+:local lastTime [/system scheduler get [find name="$scheduleName"] comment]
+# for checking time of each log entry
+:local currentTime
+# log message
+:local message
+ 
+# final output
+:local output
+:local myMac
+:local myHost
+:local ptr1
+:local ptr2
+:local emoji "\E2\9C\85"
+
+:local keepOutput false
+# if lastTime is empty, set keepOutput to true
+:if ([:len $lastTime] = 0) do={
+  :set keepOutput true
+}
+
+
+:local counter 0
+# loop through all log entries that have been found
+:foreach i in=$startBuf do={
+ 
+# loop through all removeThese array items
+  :local keepLog true
+  :foreach j in=$removeThese do={
+#   if this log entry contains any of them, it will be ignored
+    :if ([/log get $i message] ~ "$j") do={
+      :set keepLog false
+    }
+  }
+  :if ($keepLog = true) do={
+   
+   :set message [/log get $i message]
+
+#   LOG DATE
+#   depending on log date/time, the format may be different. 3 known formats
+#   format of jan/01/2002 00:00:00 which shows up at unknown date/time. Using as default
+    :set currentTime [ /log get $i time ]
+#   format of 00:00:00 which shows up on current day's logs
+   :if ([:len $currentTime] = 8 ) do={
+     :set currentTime ([:pick [/system clock get date] 0 11]." ".$currentTime)
+    } else={
+#     format of jan/01 00:00:00 which shows up on previous day's logs
+     :if ([:len $currentTime] = 15 ) do={
+        :set currentTime ([:pick $currentTime 0 6]."/".[:pick [/system clock get date] 7 11]." ".[:pick $currentTime 7 15])
+      }
+   }
+
+
+#   if keepOutput is true, add this log entry to output
+   :if ($keepOutput = true) do={
+   
+      :if ( [:find $message " assigned"] > 0 ) do={
+	    :set ptr1 ([:find $message "to"] +3)
+	    :set ptr2 [:len $message]
+	    :set myMac [:pick $message $ptr1 $ptr2 ]
+	    :set myHost [/ip dhcp-server lease get [find where mac-address=$myMac] host-name]
+	    :set message ($message." name=".$myHost)
+     }
+	
+
+      :set output ($output."Data e Ora: ".$currentTime. " \E2\9A\A0 \E2\9A\A0 \E2\9A\A0 \E2\9A\A0--> ".$message."\r\n")
+ 
+  }
+
+    :if ($currentTime = $lastTime) do={
+     :set keepOutput true
+     :set output ""
+   }
+  }
+  :if ($counter = ([:len $startBuf]-1)) do={
+   :if ($keepOutput = false) do={    
+     :if ([:len $message] > 0) do={
+        :set output ($output.$currentTime." ".$message."\r\n")
+      }
+    }
+  }
+  :set counter ($counter + 1)
+}
+
+
+if ([:len $output] > 0) do={
+
+	/system scheduler set [find name="$scheduleName"] comment=$currentTime
+
+	:set output ("Azienda: ".$azienda."\r\n"."Dispositivo: ".$myRouterName."\r\n".$output."\r\n".$slogan)
+	 
+	:do { 
+		:local requestUrl "https://api.telegram.org/bot$bot/sendMessage";
+		:local httpData "{\"chat_id\": \"$ChatID1\", \"text\": \"$output\"}";
+		/tool fetch url=$requestUrl http-data=$httpData http-header-field=content-type:application/json http-method=post  keep-result=no
+	} on-error={
+		# log errori http post (disabilitato)
+		#:log info "finished with error";
+	}
+:delay 3s
+:if ($useChatID2="si") do={
+:local requestUrl "https://api.telegram.org/bot$bot/sendMessage";
+		:local httpData "{\"chat_id\": \"$ChatID2\", \"text\": \"$output\"}";
+		/tool fetch url=$requestUrl http-data=$httpData http-header-field=content-type:application/json http-method=post  keep-result=no
+	} else={
+		# log errori http post (disabilitato)
+		:log warning "[LogFilter2.0] ChatID2 non utilizzato";
+	}
+:delay 3s
+:if ($useChatID3="si") do={
+:local requestUrl "https://api.telegram.org/bot$bot/sendMessage";
+		:local httpData "{\"chat_id\": \"$ChatID3\", \"text\": \"$output\"}";
+		/tool fetch url=$requestUrl http-data=$httpData http-header-field=content-type:application/json http-method=post  keep-result=no
+	} else={
+		# log errori http post (disabilitato)
+		:log warning "[LogFilter2.0] ChatID3 non utilizzato";
+	}
+}
+}
