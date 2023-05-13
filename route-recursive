@@ -1,0 +1,12 @@
+/ip route
+add comment=public_static_route_EOLO disabled=no distance=1 dst-address=\
+    8.8.4.4/32 gateway=81.174.0.21 routing-table=main suppress-hw-offload=no
+add comment=public_static_route_myNET disabled=no distance=1 dst-address=\
+    104.244.42.1/32 gateway=192.168.100.1 routing-table=main \
+    suppress-hw-offload=no
+add check-gateway=ping comment=default-myNET disabled=no distance=2 \
+    dst-address=0.0.0.0/0 gateway=104.244.42.1 pref-src="" routing-table=main \
+    scope=30 suppress-hw-offload=no target-scope=31
+add check-gateway=ping comment=default-EOLO disabled=no distance=1 \
+    dst-address=0.0.0.0/0 gateway=8.8.4.4 pref-src="" routing-table=main \
+    scope=30 suppress-hw-offload=no target-scope=31
