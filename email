@@ -1,0 +1,3 @@
+/tool e-mail
+set address=1.2.3.4 from="<foisfabio.it>" password=\
+    "password1" port=465 tls=yes user=greenet@foisfabio.it
