@@ -1,0 +1,35 @@
+
+/tool netwatch
+add comment=test-ISP-myNET disabled=no down-script="{\r\
+    \n/tool e-mail send tls=yes server=1.2.3.4 from=greenet@foisfabio.it subject=\"GREEN-NET_MILANO-TIMEOUT_ISP_myNET\" to=mariorossi@italia.it body=\"Buongiorno, e' stato rilevato un \
+    disservizio della linea internet myNET da circa 1 ora. \r\
+    \nQuesto avviso e' stato automaticamente generato dal Router della sede di Milano, al ripristino della linea riceverete una nuova mail.\r\
+    \nSi prega di non rispondere a questa mail in quanto la casella non e' monitorata.\r\
+    \n--------------------------------------------------------------------\r\
+    \nSistemi di alert by foisfabio.it\"\r\
+    \n/log warning \"Netwatch_myNET DOWN\"\r\
+    \n}" host=104.244.42.1 http-codes="" interval=30m packet-count=10 packet-interval=1s start-delay=5m test-script="" timeout=3s type=icmp up-script="{\r\
+    \n/tool/e-mail/send tls=yes from=greenet@foisfabio.it to=mariorossi@italia.it subject=\"GREEN-NET_MILANO-RIPRISTINO_ISP_myNET\" body=\"Buongiorno, e' stato rilevato il ripristino della lin\
+    ea internet myNET da circa 1 ora.\r\
+    \nQuesto avviso e' stato automaticamente generato dal Router della sede di Milano. \r\
+    \nSi prega di non rispondere a questa mail in quanto la casella non e' monitorata.\r\
+    \n-----------------------------------------------------------------------\r\
+    \nSistema di alert by foisfabio.it\"\r\
+    \n/log warning \"Netwatch_myNET_RIPRISTINATA\"\r\
+    \n}\r\
+    \n"
+add comment=test-ISP-EOLO disabled=no down-script="/tool e-mail send tls=yes from=greenet@foisfabio.it subject=\"GREEN-NET_MILANO-TIMEOUT_ISP_EOLO\" to=mariorossi@italia.it body=\"Buongiorno, \
+    e' stato rilevato un disservizio della linea internet EOLO da circa 1 ora. \r\
+    \nQuesto avviso e' stato automaricamente generato dal Router della sede di Provaglio, al ripristino della linea riceverete una nuova mail.\r\
+    \nSi prega di non rispondere a questa mail in quanto la casella non e' monitorata.\r\
+    \n---------------------------------------------------------------------\r\
+    \nSistemi di alert by foisfabio.it\"\r\
+    \n/log error \"Netwatch_EOLO_DOWN\"\r\
+    \n" host=81.174.0.21 http-codes="" interval=30m packet-count=10 packet-interval=1s start-delay=5m test-script="" timeout=3s type=icmp up-script="/tool e-mail send tls=yes from=gre\
+    enet@foisfabio.it subject=\"GREEN-NET_MILANO-RIPRISTINO_ISP_EOLO\" to=mariorossi@italia.it body=\"Buongiorno, e' stato rilevato il ripristino della linea internet EOLO da circa 1 ora.\r\
+    \nQuesto avviso e' stato automaricamente generato dal Router della sede di Milano.\r\
+    \nSi prega di non rispondere a questa mail in quanto la casella non e' monitorata.\r\
+    \n----------------------------------------------------------------------\r\
+    \nSistema di alert by foisfabio.it\"\r\
+    \n/log warning \"Netwatch_EOLO_RIPRISTINATA\"\r\
+    \n"
