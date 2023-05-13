@@ -20,7 +20,7 @@ add comment=test-ISP-myNET disabled=no down-script="{\r\
     \n"
 add comment=test-ISP-EOLO disabled=no down-script="/tool e-mail send tls=yes from=greenet@foisfabio.it subject=\"GREEN-NET_MILANO-TIMEOUT_ISP_EOLO\" to=mariorossi@italia.it body=\"Buongiorno, \
     e' stato rilevato un disservizio della linea internet EOLO da circa 1 ora. \r\
-    \nQuesto avviso e' stato automaricamente generato dal Router della sede di Provaglio, al ripristino della linea riceverete una nuova mail.\r\
+    \nQuesto avviso e' stato automaricamente generato dal Router della sede di Milano, al ripristino della linea riceverete una nuova mail.\r\
     \nSi prega di non rispondere a questa mail in quanto la casella non e' monitorata.\r\
     \n---------------------------------------------------------------------\r\
     \nSistemi di alert by foisfabio.it\"\r\
